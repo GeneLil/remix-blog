@@ -1,7 +1,4 @@
-export type Tag = {
-  id: string;
-  name: string;
-};
+import type { Tag } from "~/services/tag";
 
 const coloredTags = {
   default: "bg-blue-100 text-blue-800  dark:text-blue-400  border-blue-400",
@@ -41,12 +38,12 @@ const getColor = (id: string, colorObj: object) => {
   return colors[Math.abs(hash) % colors.length];
 };
 
-export const Tag = ({
+export const TagComponent = ({
   tag,
   onIconClick,
 }: {
   tag: Tag;
-  onIconClick: (id: string) => void;
+  onIconClick?: (id: string) => void;
 }) => {
   return (
     <span
@@ -54,30 +51,32 @@ export const Tag = ({
       className={`text-xs font-medium px-2.5 py-0.5 rounded-sm dark:bg-gray-700 border ${getColor(tag.id, coloredTags)}`}
     >
       {tag.name}
-      <button
-        type="button"
-        className={`inline-flex items-center p-1 ms-2 text-sm bg-transparent rounded-xs ${getColor(tag.id, coloredButtons)}`}
-        data-dismiss-target="#badge-dismiss"
-        aria-label="Remove"
-        onClick={() => onIconClick(tag.id)}
-      >
-        <svg
-          className="w-2 h-2"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 14 14"
+      {onIconClick && (
+        <button
+          type="button"
+          className={`inline-flex items-center p-1 ms-2 text-sm bg-transparent rounded-xs ${getColor(tag.id, coloredButtons)}`}
+          data-dismiss-target="#badge-dismiss"
+          aria-label="Remove"
+          onClick={() => onIconClick(tag.id)}
         >
-          <path
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-          />
-        </svg>
-        <span className="sr-only">Remove badge</span>
-      </button>
+          <svg
+            className="w-2 h-2"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 14 14"
+          >
+            <path
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+            />
+          </svg>
+          <span className="sr-only">Remove badge</span>
+        </button>
+      )}
     </span>
   );
 };

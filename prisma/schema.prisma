@@ -34,16 +34,17 @@ model Profile {
 }
 
 model Post {
-  id        String    @id @default(uuid())
-  title     String
-  body      String
-  author    User      @relation(fields: [authorId], references: [id])
-  createdAt DateTime  @default(now())
-  photoLink String
-  authorId  String
-  tags      Tag[]
-  comments  Comment[]
-  likes     Like[]
+  id         String    @id @default(uuid())
+  title      String
+  body       String
+  author     User      @relation(fields: [authorId], references: [id])
+  createdAt  DateTime  @default(now())
+  modifiedAt DateTime  @default(now())
+  photoLink  String
+  authorId   String
+  tags       Tag[]
+  comments   Comment[]
+  likes      Like[]
 }
 
 model Tag {

@@ -1,5 +1,9 @@
 import { prisma } from "~/utils/db.server";
-import { Tag } from "~/components/Tag";
+
+export type Tag = {
+  id: string;
+  name: string;
+};
 
 export type ActionResponse = {
   tag?: Tag;
@@ -11,6 +15,10 @@ export const deleteTagAction = async (request: Request) => {
   const formData = await request.formData();
   const tagId = String(formData.get("id"));
   try {
+    await prisma.tag.update({
+      where: { id: tagId },
+      data: { posts: { disconnect: [] } },
+    });
     await prisma.tag.delete({ where: { id: tagId } });
     return Response.json({ success: true });
   } catch (error) {

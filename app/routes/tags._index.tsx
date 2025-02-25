@@ -8,13 +8,14 @@ import {
 import { prisma } from "~/utils/db.server";
 import { useState, useEffect } from "react";
 import clsx from "clsx";
-import { Tag } from "~/components/Tag";
+import { TagComponent } from "~/components/Tag";
 import { Error, Label } from "~/components/Typography";
 import toast from "react-hot-toast";
 import {
   deleteTagAction,
   createTagAction,
   type ActionResponse,
+  Tag,
 } from "~/services/tag";
 
 export const loader = async () => {
@@ -77,7 +78,7 @@ export default function TagsLayout() {
       </Form>
       <div className="w-full flex flex-wrap gap-2">
         {tags.map((tag) => (
-          <Tag tag={tag} key={tag.id} onIconClick={onTagDelete} />
+          <TagComponent tag={tag} key={tag.id} onIconClick={onTagDelete} />
         ))}
       </div>
     </div>

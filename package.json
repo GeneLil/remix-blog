@@ -20,6 +20,7 @@
     "@remix-run/node": "^2.15.3",
     "@remix-run/react": "^2.15.3",
     "@remix-run/serve": "^2.15.3",
+    "@remix-validated-form/with-zod": "^2.0.7",
     "@routes-gen/remix": "^0.3.7",
     "bcryptjs": "^3.0.0",
     "clsx": "^2.1.1",
@@ -32,7 +33,9 @@
     "react-hot-toast": "^2.5.2",
     "remix-auth": "^4.1.0",
     "remix-auth-form": "^3.0.0",
-    "routes-gen": "^0.6.1"
+    "remix-validated-form": "^5.1.5",
+    "routes-gen": "^0.6.1",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.15.3",

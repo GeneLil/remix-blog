@@ -2,7 +2,7 @@ import { redirect } from "@remix-run/node";
 import { sessionStorage } from "~/utils/session.server";
 
 // Обработчик для GET-запросов
-export const loader = async ({ request }: { request: Request }) => {
+export const loader = async () => {
   return redirect("/"); // Перенаправим пользователя на главную, если он перешел по URL
 };
 
