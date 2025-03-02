@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import { hashPassword } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
@@ -10,11 +10,11 @@ export const action = async ({ request }: { request: Request }) => {
   const password = formData.get("password");
 
   if (!email || !password) {
-    return json({ error: "Заполните все поля" }, { status: 400 });
+    return Response.json({ error: "Fill all fields" }, { status: 400 });
   }
 
   if (typeof email !== "string" || typeof password !== "string") {
-    return json({ error: "Invalid form data" }, { status: 400 });
+    return Response.json({ error: "Invalid form data" }, { status: 400 });
   }
 
   const hashedPassword = await hashPassword(password);
@@ -33,7 +33,7 @@ export const action = async ({ request }: { request: Request }) => {
       },
     });
   } catch (error) {
-    return json({ error: "Ошибка при регистрации" }, { status: 500 });
+    return Response.json({ error: "Registration error " }, { status: 500 });
   }
 };
 

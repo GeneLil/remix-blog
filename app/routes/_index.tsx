@@ -14,5 +14,5 @@ export const loader = async ({ request }: { request: Request }) => {
 };
 
 export default function _index() {
-  return <div className="flex h-screen items-center justify-center" />;
+  return <div />;
 }

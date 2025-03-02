@@ -1,13 +1,14 @@
 import { NavLink, useLocation } from "@remix-run/react";
 import clsx from "clsx";
+import { UserMenu } from "~/components/UserMenu";
 
 export default function Header() {
   const location = useLocation();
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
-    <nav className="bg-white border-gray-200 dark:bg-gray-900">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+    <nav className="bg-white border-gray-200 dark:bg-gray-900 flex gap-8 p-4">
+      <div className="max-w-screen-xl flex flex-wrap w-full justify-between mx-auto">
         <div className="flex md:order-2">
           <button
             type="button"
@@ -139,6 +140,7 @@ export default function Header() {
           </ul>
         </div>
       </div>
+      <UserMenu />
     </nav>
   );
 }

@@ -20,5 +20,9 @@ export async function getUser(request: Request) {
   const userId = session.get("userId");
   if (!userId) return null;
 
-  return prisma.user.findUnique({ where: { id: userId } });
+  return prisma.user.findUnique({
+    where: { id: userId },
+    include: { profile: true },
+    omit: { password: true },
+  });
 }

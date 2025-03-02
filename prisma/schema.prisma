@@ -13,21 +13,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  AUTHOR
+  ADMIN
+  READER
+}
+
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
-  password  String    @unique
+  password  String
   createdAt DateTime  @default(now())
+  role      UserRole  @default(READER)
   posts     Post[]
   profile   Profile?
-  profileId String?
   comments  Comment[]
   likes     Like[]
 }
 
 model Profile {
   id        String  @id @default(uuid())
-  name      String
+  firstName String
+  lastName  String
   photoLink String?
   user      User    @relation(fields: [userId], references: [id])
   userId    String  @unique

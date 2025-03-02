@@ -1,23 +1,13 @@
 import { HeaderSmall } from "~/components/Typography";
 import { useLoaderData } from "@remix-run/react";
-import { prisma } from "~/utils/db.server";
-import { type Tag } from "~/services/tag";
+import { type Tag, loadAllTags } from "~/services/tag";
 import { FormCheckboxGroup } from "~/components/FormCheckboxGroup";
 import { useState } from "react";
 import { ImageUploader } from "~/components/ImageUploader";
-import { ValidatedForm, validationError } from "remix-validated-form";
-import { withZod } from "@remix-validated-form/with-zod";
-import { z } from "zod";
-import {
-  redirect,
-  unstable_createFileUploadHandler,
-  unstable_createMemoryUploadHandler,
-  unstable_parseMultipartFormData,
-  unstable_composeUploadHandlers,
-} from "@remix-run/node";
-import { getUser } from "~/utils/auth.server";
+import { ValidatedForm } from "remix-validated-form";
 import { FormInput } from "~/components/FormInput";
 import { FormTextarea } from "~/components/FormTextarea";
+import { createPost, postValidator } from "~/services/posts";
 
 type LoaderData = {
   tags?: Tag[];
@@ -25,94 +15,12 @@ type LoaderData = {
   error?: string;
 };
 
-const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-];
-const MAX_IMAGE_SIZE = 5_000_000;
-
-const postValidator = withZod(
-  z.object({
-    title: z.string().min(1, { message: "Title is required" }),
-    body: z.string().min(1, { message: "Body is required" }),
-    tags: z.array(z.string()),
-    image: z
-      .any()
-      .refine((file) => !!file, { message: "Image is required." })
-      .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file?.type), {
-        message: ".jpg, .jpeg, .png and .webp files are accepted.",
-      })
-      .refine((file) => file?.size <= MAX_IMAGE_SIZE, {
-        message: `Max file size is 5MB.`,
-      }),
-  }),
-);
-
 export const action = async ({ request }: { request: Request }) => {
-  const uploadHandler = unstable_composeUploadHandlers(
-    unstable_createFileUploadHandler({
-      maxPartSize: MAX_IMAGE_SIZE,
-      file: ({ filename }) => {
-        const extname = filename.split(".").pop();
-        return `${Date.now()}.${extname}`;
-      },
-      directory: "./public/uploads",
-    }),
-    unstable_createMemoryUploadHandler(),
-  );
-
-  const formData = await unstable_parseMultipartFormData(
-    request,
-    uploadHandler,
-  );
-
-  const result = await postValidator.validate(formData);
-
-  if (result.error) {
-    return validationError(result.error);
-  }
-
-  const { title, body, image, tags } = result.data;
-
-  try {
-    const user = await getUser(request);
-    if (user) {
-      const post = await prisma.post.create({
-        data: {
-          authorId: user.id,
-          title,
-          body,
-          photoLink: image ? image.name : "",
-        },
-      });
-      if (tags.length > 0) {
-        await prisma.post.update({
-          where: { id: post.id },
-          data: {
-            tags: {
-              connect: tags.map((tagId) => ({ id: tagId })),
-            },
-          },
-          include: { tags: true },
-        });
-      }
-
-      return redirect("/posts");
-    }
-  } catch (error) {
-    return Response.json({ status: "error", error });
-  }
+  return await createPost(request);
 };
 
 export const loader = async () => {
-  try {
-    const allTags = await prisma.tag.findMany();
-    return Response.json({ tags: allTags, success: true });
-  } catch (error) {
-    return Response.json({ error, success: false });
-  }
+  return await loadAllTags();
 };
 
 export default function CreatePost() {

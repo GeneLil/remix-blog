@@ -11,6 +11,15 @@ export type ActionResponse = {
   error?: string;
 };
 
+export const loadAllTags = async () => {
+  try {
+    const allTags = await prisma.tag.findMany();
+    return Response.json({ tags: allTags, success: true });
+  } catch (error) {
+    return Response.json({ error, success: false });
+  }
+};
+
 export const deleteTagAction = async (request: Request) => {
   const formData = await request.formData();
   const tagId = String(formData.get("id"));

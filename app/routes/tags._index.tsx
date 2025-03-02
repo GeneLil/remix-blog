@@ -30,7 +30,7 @@ export const action = async ({ request }: { request: Request }) => {
   return await createTagAction(request);
 };
 
-export default function TagsLayout() {
+export default function Tags() {
   const tags = useLoaderData<Tag[]>();
   const actionData = useActionData<ActionResponse>();
   const [inputValue, setInputValue] = useState("");
@@ -49,7 +49,7 @@ export default function TagsLayout() {
   };
 
   return (
-    <div className="max-w-screen-xl w-1/2 flex flex-wrap flex-col gap-8 items-center justify-center mx-auto p-4">
+    <div className="max-w-screen-xl mx-auto w-1/2">
       <Form method="POST" className="w-full">
         <div>
           <Label htmlFor="tag-name">Tag name</Label>
@@ -76,7 +76,7 @@ export default function TagsLayout() {
           Create
         </button>
       </Form>
-      <div className="w-full flex flex-wrap gap-2">
+      <div className="w-full flex flex-wrap gap-2 mt-8">
         {tags.map((tag) => (
           <TagComponent tag={tag} key={tag.id} onIconClick={onTagDelete} />
         ))}

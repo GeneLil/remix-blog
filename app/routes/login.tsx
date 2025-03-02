@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Form, useActionData, Link } from "@remix-run/react";
 import { prisma } from "~/utils/db.server";
 import { verifyPassword } from "~/utils/auth.server";
@@ -12,7 +12,7 @@ export const action = async ({ request }: { request: Request }) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user || !(await verifyPassword(password, user.password))) {
-    return json({ error: "Неверный email или пароль" }, { status: 400 });
+    return Response.json({ error: "Wrong email or password" }, { status: 400 });
   }
 
   const session = await sessionStorage.getSession();
@@ -30,20 +30,25 @@ export default function LoginPage() {
 
   return (
     <div>
-      <h2>Вход в аккаунт</h2>
+      <h2>Log into account</h2>
       <Form method="post">
         <input type="email" name="email" placeholder="Email" required />
-        <input type="password" name="password" placeholder="Пароль" required />
-        <button type="submit">Войти</button>
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+        <button type="submit">Log in</button>
         {actionData?.error && <p>{actionData.error}</p>}
       </Form>
       <p>
-        Нет аккаунта?{" "}
+        Don`&apos;`t have an account?{" "}
         <Link
           to="/register"
           style={{ color: "blue", textDecoration: "underline" }}
         >
-          Зарегистрироваться
+          Register
         </Link>
       </p>
     </div>

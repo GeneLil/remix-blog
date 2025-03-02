@@ -7,6 +7,7 @@ type Props = {
   className?: string;
   placeholder?: string;
   required?: boolean;
+  defaultValue?: string;
 };
 
 export const Input = ({
@@ -16,6 +17,7 @@ export const Input = ({
   placeholder,
   required,
   name,
+  defaultValue,
 }: Props) => {
   return (
     <input
@@ -28,6 +30,7 @@ export const Input = ({
       )}
       placeholder={placeholder}
       required={required}
+      defaultValue={defaultValue}
     />
   );
 };
