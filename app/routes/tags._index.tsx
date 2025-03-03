@@ -17,8 +17,10 @@ import {
   type ActionResponse,
   Tag,
 } from "~/services/tag";
+import { requireAuth } from "~/utils/authGuard.server";
 
-export const loader = async () => {
+export const loader = async ({ request }: { request: Request }) => {
+  await requireAuth(request);
   const tags = await prisma.tag.findMany();
   return Response.json(tags);
 };

@@ -4,8 +4,10 @@ import { Card } from "~/components/Card";
 import { TagComponent } from "~/components/Tag";
 import type { Tag } from "~/services/tag";
 import type { Post } from "~/services/posts";
+import { requireAuth } from "~/utils/authGuard.server";
 
-export const loader = async () => {
+export const loader = async ({ request }: { request: Request }) => {
+  await requireAuth(request);
   const posts = await prisma.post.findMany({ include: { tags: true } });
 
   return Response.json({ posts });

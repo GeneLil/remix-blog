@@ -9,11 +9,11 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { Toaster } from "react-hot-toast";
-import { LinksFunction, redirect } from "@remix-run/node";
+import { type LinksFunction, redirect } from "@remix-run/node";
 import { UserProvider } from "~/context/user";
 import type { User } from "~/services/user";
-
 import "./tailwind.css";
+import { sessionStorage } from "~/utils/session.server";
 import Header from "~/components/Header";
 import { getUser } from "~/utils/auth.server";
 
@@ -35,9 +35,17 @@ export const loader = async ({ request }: { request: Request }) => {
   return Response.json({ user });
 };
 
-// export const action = async () => {
-//   return redirect("/login");
-// };
+export async function action({ request }: { request: Request }) {
+  const session = await sessionStorage.getSession(
+    request.headers.get("Cookie"),
+  );
+
+  return redirect("/login", {
+    headers: {
+      "Set-Cookie": await sessionStorage.destroySession(session),
+    },
+  });
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -53,19 +61,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ScrollRestoration />
         <Scripts />
         <Toaster position="top-right" />
-        <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
       </body>
     </html>
   );
 }
 
 export default function App() {
+  const { user } = useLoaderData<{ user: User | null }>();
   return (
     <div>
+      {user && (
+        <UserProvider user={user}>
+          <Header />
+        </UserProvider>
+      )}
       <main>
-        <div className="max-w-screen-xl mx-auto">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
     </div>
   );

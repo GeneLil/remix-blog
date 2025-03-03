@@ -2,8 +2,16 @@ import { prisma } from "~/utils/db.server";
 import type { Post } from "~/services/posts";
 import { HeaderMiddle, Paragraph } from "~/components/Typography";
 import { useLoaderData } from "@remix-run/react";
+import { requireAuth } from "~/utils/authGuard.server";
 
-export const loader = async ({ params }: { params: { postId: string } }) => {
+export const loader = async ({
+  params,
+  request,
+}: {
+  params: { postId: string };
+  request: Request;
+}) => {
+  await requireAuth(request);
   const postId = params.postId;
   const post = await prisma.post.findUnique({
     where: { id: postId },

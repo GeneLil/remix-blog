@@ -1,13 +1,12 @@
 import { redirect } from "@remix-run/node";
-import { getSession } from "./session.server";
+import { getUser } from "~/utils/auth.server";
 
 export async function requireAuth(request: Request) {
-  const session = await getSession(request);
-  const userId = session.get("userId");
+  const user = await getUser(request);
 
-  if (!userId) {
+  if (!user) {
     throw redirect("/login");
   }
 
-  return userId;
+  return user;
 }

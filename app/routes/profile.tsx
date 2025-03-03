@@ -1,7 +1,6 @@
 import { requireAuth } from "~/utils/authGuard.server";
 import { ValidatedForm, validationError } from "remix-validated-form";
 import { HeaderSmall } from "~/components/Typography";
-import { useUser } from "~/context/user";
 import { FormInput } from "~/components/FormInput";
 import { ImageUploader } from "~/components/ImageUploader";
 import { withZod } from "@remix-validated-form/with-zod";
@@ -13,8 +12,10 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
 } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import { getUser } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
+import type { User } from "~/services/user";
 
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
@@ -25,7 +26,7 @@ const ACCEPTED_IMAGE_TYPES = [
 
 const MAX_IMAGE_SIZE = 5_000_000;
 
-export const userProfileValidator = withZod(
+const userProfileValidator = withZod(
   z.object({
     firstName: z.string().min(1, { message: "First name is required" }),
     lastName: z.string().min(1, { message: "Last name is required" }),
@@ -99,12 +100,12 @@ export const action = async ({ request }: { request: Request }) => {
 
 export const loader = async ({ request }: { request: Request }) => {
   await requireAuth(request);
-  return null;
+  const user = await getUser(request);
+  return Response.json({ user });
 };
 
 export default function ProfileLayout() {
-  const user = useUser();
-  const { profile } = user;
+  const { user } = useLoaderData<{ user: User | null }>();
   return (
     <div className="w-1/2 flex flex-col gap-4 mx-auto">
       <HeaderSmall className="text-center">Edit user profile</HeaderSmall>
@@ -114,10 +115,10 @@ export default function ProfileLayout() {
         encType="multipart/form-data"
         validator={userProfileValidator}
         defaultValues={{
-          firstName: profile?.firstName,
-          lastName: profile?.lastName,
-          email: user.email,
-          photoLink: profile?.photoLink,
+          firstName: user?.profile?.firstName,
+          lastName: user?.profile?.lastName,
+          email: user?.email,
+          photoLink: user?.profile?.photoLink,
         }}
       >
         <div className="mb-5">
@@ -144,7 +145,9 @@ export default function ProfileLayout() {
             name="photoLink"
             label="User image"
             defaultImage={
-              profile?.photoLink ? `/avatars/${profile?.photoLink}` : ""
+              user?.profile?.photoLink
+                ? `/avatars/${user.profile.photoLink}`
+                : ""
             }
           />
         </div>

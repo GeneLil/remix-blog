@@ -8,6 +8,7 @@ import { ValidatedForm } from "remix-validated-form";
 import { FormInput } from "~/components/FormInput";
 import { FormTextarea } from "~/components/FormTextarea";
 import { createPost, postValidator } from "~/services/posts";
+import { requireAuth } from "~/utils/authGuard.server";
 
 type LoaderData = {
   tags?: Tag[];
@@ -16,6 +17,7 @@ type LoaderData = {
 };
 
 export const action = async ({ request }: { request: Request }) => {
+  await requireAuth(request);
   return await createPost(request);
 };
 
