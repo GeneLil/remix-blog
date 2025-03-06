@@ -70,14 +70,18 @@ export default function App() {
   const { user } = useLoaderData<{ user: User | null }>();
   return (
     <div>
-      {user && (
+      {user ? (
         <UserProvider user={user}>
           <Header />
+          <main>
+            <Outlet />
+          </main>
         </UserProvider>
+      ) : (
+        <main>
+          <Outlet />
+        </main>
       )}
-      <main>
-        <Outlet />
-      </main>
     </div>
   );
 }

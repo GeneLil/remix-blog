@@ -1,14 +1,15 @@
-import { HeaderSmall } from "~/components/Typography";
+import { prisma } from "~/utils/db.server";
+import { HeaderMiddle, HeaderSmall } from "~/components/Typography";
+import { requireAuth } from "~/utils/authGuard.server";
 import { useLoaderData } from "@remix-run/react";
-import { type Tag, loadAllTags } from "~/services/tag";
-import { FormCheckboxGroup } from "~/components/FormCheckboxGroup";
-import { useState } from "react";
-import { ImageUploader } from "~/components/ImageUploader";
+import { MAX_IMAGE_SIZE, type Post, postValidator } from "~/services/posts";
 import { ValidatedForm, validationError } from "remix-validated-form";
 import { FormInput } from "~/components/FormInput";
 import { FormTextarea } from "~/components/FormTextarea";
-import { requireAuth } from "~/utils/authGuard.server";
-import { getUser } from "~/utils/auth.server";
+import { FormCheckboxGroup } from "~/components/FormCheckboxGroup";
+import { ImageUploader } from "~/components/ImageUploader";
+import { useState } from "react";
+import type { Tag } from "~/services/tag";
 import {
   redirect,
   unstable_composeUploadHandlers,
@@ -16,16 +17,31 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
 } from "@remix-run/node";
-import { prisma } from "~/utils/db.server";
-import { postValidator, MAX_IMAGE_SIZE } from "~/services/posts";
 
-type LoaderData = {
-  tags?: Tag[];
-  success: boolean;
-  error?: string;
+export const loader = async ({
+  params,
+  request,
+}: {
+  params: { id: string };
+  request: Request;
+}) => {
+  await requireAuth(request);
+  const post = await prisma.post.findUnique({
+    where: { id: params.id },
+    include: { tags: true, author: { include: { profile: true } } },
+  });
+  const allTags = await prisma.tag.findMany();
+
+  return Response.json({ post, allTags });
 };
 
-export const action = async ({ request }: { request: Request }) => {
+export const action = async ({
+  request,
+  params,
+}: {
+  request: Request;
+  params: { id: string };
+}) => {
   const uploadHandler = unstable_composeUploadHandlers(
     unstable_createFileUploadHandler({
       maxPartSize: MAX_IMAGE_SIZE,
@@ -51,44 +67,29 @@ export const action = async ({ request }: { request: Request }) => {
 
   const { title, body, image, tags } = result.data;
 
-  const user = await getUser(request);
-  try {
-    if (user) {
-      const post = await prisma.post.create({
-        data: {
-          authorId: user.id,
-          title,
-          body,
-          photoLink: image ? image.name : "",
-        },
-      });
-      if (tags.length > 0) {
-        await prisma.post.update({
-          where: { id: post.id },
-          data: {
-            tags: {
-              connect: tags.map((tagId) => ({ id: tagId })),
-            },
-          },
-          include: { tags: true },
-        });
-      }
-
-      return redirect("/posts");
-    }
-  } catch (error) {
-    return Response.json({ status: "error", error });
-  }
+  await prisma.post.update({
+    where: {
+      id: params.id,
+    },
+    data: {
+      title,
+      body,
+      modifiedAt: new Date(),
+      photoLink: image ? image.name : "",
+      tags: {
+        set: [],
+        connect: tags ? tags.map((tagId) => ({ id: tagId })) : [],
+      },
+    },
+  });
+  return redirect("/posts");
 };
 
-export const loader = async ({ request }: { request: Request }) => {
-  await requireAuth(request);
-  return await loadAllTags();
-};
+const EditPostLayout = () => {
+  const { post, allTags } = useLoaderData<{ post: Post; allTags: Tag[] }>();
+  const tags = post.tags.map((tag) => tag.id);
 
-export default function CreatePost() {
-  const { tags } = useLoaderData<LoaderData>();
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(tags);
 
   const handleTagSelection = (tagId: string) => {
     if (selectedTags.includes(tagId)) {
@@ -98,13 +99,22 @@ export default function CreatePost() {
     setSelectedTags([...selectedTags, tagId]);
   };
 
+  const { title, body, photoLink } = post;
+
   return (
-    <div className="max-w-screen-xl w-1/2 flex flex-wrap flex-col gap-8 items-center justify-center mx-auto p-4">
+    <div className="max-w-screen-xl flex flex-wrap flex-col gap-8 items-center justify-center mx-auto p-4">
+      <HeaderMiddle>Edit post</HeaderMiddle>
       <ValidatedForm
+        validator={postValidator}
         id="create-post-form"
         method="POST"
-        validator={postValidator}
         encType="multipart/form-data"
+        defaultValues={{
+          title,
+          body,
+          image: photoLink,
+          tags,
+        }}
         className="w-[800px]"
       >
         <div className="mb-5">
@@ -116,9 +126,9 @@ export default function CreatePost() {
         <div className="mb-5">
           <HeaderSmall>Apply tags:</HeaderSmall>
           <div className="w-full flex flex-wrap gap-2">
-            {tags?.length ? (
+            {allTags.length ? (
               <FormCheckboxGroup
-                items={tags}
+                items={allTags}
                 onChange={handleTagSelection}
                 checkedTags={selectedTags}
                 name="tags"
@@ -129,15 +139,21 @@ export default function CreatePost() {
           </div>
         </div>
         <div className="mb-5">
-          <ImageUploader name="image" label="Post image" defaultImage="" />
+          <ImageUploader
+            name="image"
+            label="Post image"
+            defaultImage={`/uploads/${photoLink}`}
+          />
         </div>
         <button
           type="submit"
           className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         >
-          Create
+          Update
         </button>
       </ValidatedForm>
     </div>
   );
-}
+};
+
+export default EditPostLayout;

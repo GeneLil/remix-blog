@@ -9,7 +9,6 @@ import { requireAuth } from "~/utils/authGuard.server";
 export const loader = async ({ request }: { request: Request }) => {
   await requireAuth(request);
   const posts = await prisma.post.findMany({ include: { tags: true } });
-
   return Response.json({ posts });
 };
 
@@ -27,7 +26,7 @@ const PostsList = ({ posts }: { posts: Post[] }) => {
   };
 
   return (
-    <div className="w-full flex flex-row flex-wrap gap-6 content-center">
+    <div className="w-full flex flex-row flex-wrap gap-6 justify-center">
       {posts.map((post) => (
         <Card
           key={post.id}
@@ -49,7 +48,7 @@ export default function PostsGrid() {
   }>();
 
   return (
-    <div className="flex flex-wrap gap-8 items-center justify-center p-4">
+    <div className="flex flex-wrap gap-8 items-center justify-center p-4 max-w-screen-xl mx-auto">
       {posts && posts.length ? <PostsList posts={posts} /> : <NoPosts />}
       {error && <p className="text-red-600">{error}</p>}
       <Link to="/posts/create">Create new post</Link>

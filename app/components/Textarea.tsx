@@ -7,6 +7,7 @@ type Props = {
   placeholder?: string;
   required?: boolean;
   rows?: number;
+  defaultValue?: string;
 };
 
 export const Textarea = ({
@@ -16,6 +17,7 @@ export const Textarea = ({
   placeholder,
   required,
   rows = 4,
+  defaultValue,
 }: Props) => {
   return (
     <textarea
@@ -28,6 +30,7 @@ export const Textarea = ({
       name={name}
       required={required}
       placeholder={placeholder}
+      defaultValue={defaultValue}
     ></textarea>
   );
 };
