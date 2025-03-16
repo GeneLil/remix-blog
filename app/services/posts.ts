@@ -4,6 +4,14 @@ import { zfd } from "zod-form-data";
 import { withZod } from "@remix-validated-form/with-zod";
 import { z } from "zod";
 
+export type Comment = {
+  id: string;
+  body: string;
+  author: User;
+  post: Post;
+  createdAt: string;
+};
+
 export type Post = {
   id: string;
   title: string;
@@ -12,7 +20,7 @@ export type Post = {
   authorId: string;
   photoLink: string;
   tags: Tag[];
-  comments: string[];
+  comments: Comment[];
   likes: string[];
   createdAt: string;
   modifiedAt: string;

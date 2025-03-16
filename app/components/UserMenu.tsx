@@ -1,4 +1,4 @@
-import { useUser } from "~/context/user";
+import { useUser, useUserImage } from "~/context/user";
 import _ from "lodash";
 import Logout from "~/routes/logout";
 import { Dropdown } from "flowbite-react";
@@ -7,6 +7,7 @@ const { upperFirst, lowerCase } = _;
 
 export const UserMenu = () => {
   const user = useUser();
+  const userImage = useUserImage(user.profile?.photoLink);
 
   return (
     <>
@@ -18,10 +19,10 @@ export const UserMenu = () => {
             <span className="sr-only">Open user menu</span>
             <img
               className="w-8 h-8 me-2 rounded-full"
-              src={`/avatars/${user.profile.photoLink}`}
+              src={userImage}
               alt="user-avatar"
             />
-            {user.profile.firstName} {user.profile.lastName}
+            {user.profile?.firstName} {user.profile?.lastName}
           </div>
         )}
       >

@@ -5,6 +5,7 @@ import { useLoaderData, Outlet, useLocation } from "@remix-run/react";
 import { requireAuth } from "~/utils/authGuard.server";
 import { useUser } from "~/context/user";
 import { format } from "date-fns";
+import Comments from "~/routes/comments";
 
 export const loader = async ({
   params,
@@ -16,7 +17,11 @@ export const loader = async ({
   await requireAuth(request);
   const post = await prisma.post.findUnique({
     where: { id: params.id },
-    include: { tags: true, author: { include: { profile: true } } },
+    include: {
+      tags: true,
+      comments: { include: { author: { include: { profile: true } } } },
+      author: { include: { profile: true } },
+    },
   });
 
   if (!post) {
@@ -69,6 +74,7 @@ export default function PostLayout() {
         />
         {post.body}
       </Paragraph>
+      <Comments comments={post.comments} />
     </div>
   );
 }

@@ -16,6 +16,7 @@ import { useLoaderData } from "@remix-run/react";
 import { getUser } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
 import type { User } from "~/services/user";
+import { useUserImage } from "~/context/user";
 
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
@@ -99,13 +100,13 @@ export const action = async ({ request }: { request: Request }) => {
 };
 
 export const loader = async ({ request }: { request: Request }) => {
-  await requireAuth(request);
-  const user = await getUser(request);
-  return Response.json({ user });
+  const { user } = await requireAuth(request);
+  return { user };
 };
 
 export default function ProfileLayout() {
   const { user } = useLoaderData<{ user: User | null }>();
+  const userImage = useUserImage(user?.profile?.photoLink);
   return (
     <div className="w-1/2 flex flex-col gap-4 mx-auto">
       <HeaderSmall className="text-center">Edit user profile</HeaderSmall>
@@ -144,11 +145,7 @@ export default function ProfileLayout() {
           <ImageUploader
             name="photoLink"
             label="User image"
-            defaultImage={
-              user?.profile?.photoLink
-                ? `/avatars/${user.profile.photoLink}`
-                : ""
-            }
+            defaultImage={userImage}
           />
         </div>
         <button

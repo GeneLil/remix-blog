@@ -123,7 +123,7 @@ export default function Header() {
                   { "md:text-blue-700": isActive("/posts") },
                 )}
               >
-                Home
+                Posts
               </NavLink>
             </li>
             <li>

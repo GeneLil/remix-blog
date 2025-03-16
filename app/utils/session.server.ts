@@ -1,6 +1,5 @@
 import { createCookieSessionStorage } from "@remix-run/node";
 
-// Конфигурация cookie-сессии
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: "auth_session",
@@ -12,7 +11,6 @@ export const sessionStorage = createCookieSessionStorage({
   },
 });
 
-// Получение сессии
 export async function getSession(request: Request) {
   return sessionStorage.getSession(request.headers.get("Cookie"));
 }

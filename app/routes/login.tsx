@@ -1,5 +1,5 @@
 import { redirect } from "@remix-run/node";
-import { useActionData, Link } from "@remix-run/react";
+import { useActionData, Link, Form } from "@remix-run/react";
 import { prisma } from "~/utils/db.server";
 import { verifyPassword } from "~/utils/auth.server";
 import { sessionStorage } from "~/utils/session.server";
@@ -8,6 +8,13 @@ import { ValidatedForm } from "remix-validated-form";
 import { withZod } from "@remix-validated-form/with-zod";
 import { Error, Paragraph, HeaderSmall } from "~/components/Typography";
 import { z } from "zod";
+import { GoogleButton } from "~/components/GoogleButton";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  REFRESH_TOKEN_EXPIRES_IN_DAYS,
+  ACCESS_TOKEN_EXPIRES_IN_MINUTES,
+} from "~/utils/tokens.server";
 
 const loginValidator = withZod(
   z.object({
@@ -30,11 +37,30 @@ export const action = async ({ request }: { request: Request }) => {
     return Response.json({ error: "Wrong email or password" }, { status: 400 });
   }
 
-  const session = await sessionStorage.getSession();
-  session.set(
-    "userId",
+  const accessToken = generateAccessToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
 
-    user.id,
+  const existingToken = await prisma.token.findUnique({
+    where: { userId: user.id },
+  });
+  if (!existingToken) {
+    await prisma.token.create({
+      data: {
+        userId: user.id,
+        refreshToken,
+        expiresAt: new Date(
+          Date.now() + REFRESH_TOKEN_EXPIRES_IN_DAYS * 24 * 60 * 60 * 1000,
+        ),
+      },
+    });
+  }
+
+  const session = await sessionStorage.getSession();
+  session.set("userId", user.id);
+  session.set("accessToken", accessToken);
+  session.set(
+    "tokenExpiresAt",
+    Date.now() + ACCESS_TOKEN_EXPIRES_IN_MINUTES * 60 * 1000,
   );
 
   return redirect("/posts", {
@@ -70,7 +96,6 @@ export default function LoginPage() {
             label="Password"
             type="password"
             name="password"
-            placeholder="Password"
             required
           />
         </div>
@@ -91,6 +116,9 @@ export default function LoginPage() {
           Register
         </Link>
       </Paragraph>
+      <Form method="POST" action="/auth/google">
+        <GoogleButton />
+      </Form>
     </div>
   );
 }

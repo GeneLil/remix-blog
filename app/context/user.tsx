@@ -20,3 +20,16 @@ export const useUser = () => {
   }
   return user;
 };
+
+export const useUserImage = (photoLink: string | null | undefined) => {
+  if (!photoLink) return "";
+
+  const isImageUploaded = photoLink
+    ? /^\d+\.(jpg|jpeg|png|webp)$/i.test(photoLink)
+    : false;
+
+  if (isImageUploaded) {
+    return `/avatars/${photoLink}`;
+  }
+  return `/proxy-image?url=${encodeURIComponent(photoLink)}`;
+};

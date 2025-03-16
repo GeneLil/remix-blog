@@ -1,4 +1,4 @@
-import { MetaFunction, redirect } from "@remix-run/node";
+import { type MetaFunction } from "@remix-run/node";
 import { requireAuth } from "~/utils/authGuard.server";
 
 export const meta: MetaFunction = () => {
@@ -9,8 +9,7 @@ export const meta: MetaFunction = () => {
 };
 
 export const loader = async ({ request }: { request: Request }) => {
-  await requireAuth(request);
-  return redirect("/posts");
+  return await requireAuth(request);
 };
 
 export default function _index() {
